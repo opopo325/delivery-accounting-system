@@ -9,67 +9,9 @@ using System.Text.Json;
 namespace DeliverySystem
 {
     public enum OrderStatus { New, InProgress, Delivered, Canceled }
-
-    public class Cart
-    {
-        public List<Product> Items { get; private set; } = new List<Product>();
-        private Coupon AppliedCoupon = null;
-
-        public void AddProduct(Product product)
-        {
-            Items.Add(product);
-            Console.WriteLine($"[+] Товар '{product.Name}' успішно залетів у кошик.");
-        }
-        public void RemoveProduct(Product product)
-        {
-            if (Items.Remove(product))
-                Console.WriteLine($"[-] Товар '{product.Name}' Видалено з кошика.");
-            else
-                Console.WriteLine($"[!] Цього товару немає в кошику.");
-        }
-
-        public void ApplyCoupon(Coupon coupon)
-        {
-            AppliedCoupon = coupon;
-            Console.WriteLine($"[%] Купон '{coupon.Code}' активовано! Знижка {coupon.DiscountPercentage}%");
-        }
-
-        public void Clear()
-        {
-            Items.Clear();
-            AppliedCoupon = null;
-            Console.WriteLine("[!] Кошик повністю очищено.");
-        }
-
-        public decimal CalculateTotal()
-        {
-            decimal sum = Items.Sum(p => p.Price);
-            if (AppliedCoupon != null && AppliedCoupon.IsValid())
-            {
-                sum -= sum * (AppliedCoupon.DiscountPercentage / 100m);
-            }
-            return sum;
-        }
-
-        public void PrintCart()
-        {
-            Console.WriteLine("\n=== ВАШ КОШИК ===");
-            if (Items.Count == 0)
-            {
-                Console.WriteLine("Кошик порожній, як твій гаманець. Купи щось!");
-                return;
-            }
-
-            foreach (var item in Items) Console.WriteLine($"- {item.Name} ({item.Price} грн)");
-            Console.WriteLine($"\nЗАГАЛЬНА СУМА ДО ОПЛАТИ: {CalculateTotal()} грн");
-            Console.WriteLine("=================\n");
-        }
-    }
-
     class Program
     {
         static string dbFile = "users.txt"; 
-        static string ordersFile = "orders.txt";
 
         static List<User> LoadUsersFromDatabase()
         {
@@ -243,12 +185,16 @@ namespace DeliverySystem
                                 Console.WriteLine("\n--- КАТАЛОГ ТОВАРІВ ---");
                                 foreach (var p in catalog) Console.WriteLine($"[ID: {p.Id}] {p.Name} - {p.Price} грн");
                                 break;
-                            case "2":
+                                case "2":
                                 Console.Write("Введи ID товару, який хочеш додати: ");
                                 if (int.TryParse(Console.ReadLine(), out int addId))
                                 {
                                     Product productToAdd = catalog.FirstOrDefault(p => p.Id == addId);
-                                    if (productToAdd != null) cart.AddProduct(productToAdd);
+                                    if (productToAdd != null) 
+                                    {
+                                        cart.AddProduct(productToAdd);
+                                        Console.WriteLine($"[+] Товар '{productToAdd.Name}' успішно залетів у кошик.");
+                                    }
                                     else Console.WriteLine("Блядь, немає товару з таким ID!");
                                 }
                                 break;
@@ -257,13 +203,39 @@ namespace DeliverySystem
                                 if (int.TryParse(Console.ReadLine(), out int removeId))
                                 {
                                     Product productToRemove = cart.Items.FirstOrDefault(p => p.Id == removeId);
-                                    if (productToRemove != null) cart.RemoveProduct(productToRemove);
+                                    if (productToRemove != null) 
+                                    {
+                                        bool isRemoved = cart.RemoveProduct(productToRemove);
+                                        if (isRemoved)
+                                            Console.WriteLine($"[-] Товар '{productToRemove.Name}' викинуто нахуй з кошика.");
+                                        else
+                                            Console.WriteLine($"[!] Цього лайна і так немає в кошику.");
+                                    }
                                     else Console.WriteLine("В кошику немає такої хуйні.");
                                 }
                                 break;
-                            case "4":
-                                cart.PrintCart();
-                                break;
+                           case "4":
+                            Console.WriteLine("\n=== ВАШ КОШИК ===");
+                            if (cart.Items.Count == 0)
+                            {
+                                Console.WriteLine("Кошик порожній, як твій гаманець. Купи щось!");
+                            }
+                            else
+                            {
+                                foreach (var item in cart.Items) 
+                                {
+                                    Console.WriteLine($"- {item.Name} ({item.Price} грн)");
+                                }
+                                
+                                if (cart.AppliedCoupon != null)
+                                {
+                                    Console.WriteLine($"[%] Активовано знижку: {cart.AppliedCoupon.DiscountPercentage}%");
+                                }
+                                
+                                Console.WriteLine($"\nЗАГАЛЬНА СУМА ДО ОПЛАТИ: {cart.CalculateTotal()} грн");
+                            }
+                            Console.WriteLine("=================\n");
+                            break;
                             case "5":
                                 cart.Clear();
                                 break;

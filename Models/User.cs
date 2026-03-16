@@ -1,4 +1,8 @@
-namespace DeliverySystem;
+#nullable disable
+using System.Collections.Generic;
+using System.Linq;
+
+namespace DeliverySystem; 
 public abstract class User
     {
         public int Id { get; set; }
