@@ -1,0 +1,20 @@
+[
+  {
+    "$type": "driver",
+    "CarNumber": "\u0412\u041D1234\u0410\u0410",
+    "IsAvailable": true,
+    "Id": 99,
+    "Name": "\u041C\u0430\u043A\u0441\u0456\u043C",
+    "Phone": "0669876543",
+    "Password": "12345"
+  },
+  {
+    "$type": "driver",
+    "CarNumber": "Ca1234CI",
+    "IsAvailable": true,
+    "Id": 100,
+    "Name": "\u041C\u0430\u043A\u0441\u0438\u043C",
+    "Phone": "\u002B380965763788",
+    "Password": "11012017 "
+  }
+]

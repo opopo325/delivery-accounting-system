@@ -11,87 +11,13 @@ namespace DeliverySystem
     public enum OrderStatus { New, InProgress, Delivered, Canceled }
     class Program
     {
-        static string dbFile = "users.txt"; 
-
-        static List<User> LoadUsersFromDatabase()
-        {
-            var usersDb = new List<User> { new Driver(99, "Максім", "0669876543", "12345", "ВН1234АА") };
-
-            if (File.Exists(dbFile))
-            {
-                string[] lines = File.ReadAllLines(dbFile);
-                int idCounter = 1; 
-                foreach (string line in lines)
-                {
-                    if (!string.IsNullOrWhiteSpace(line))
-                    {
-                        string[] data = line.Split('|');
-                        // Якщо 5 колонок - це Клієнт
-                        if (data.Length == 5)
-                            usersDb.Add(new Client(idCounter++, data[0], data[2], data[1], data[3], data[4]));
-                        // Якщо 4 колонки - це Кур'єр 
-                        else if (data.Length == 4)
-                            usersDb.Add(new Driver(idCounter++, data[0], data[2], data[1], data[3]));
-                    }
-                }
-            }
-            return usersDb;
-        }
-
-        static void SaveUserToFile(string name, string password, string phone, string email, string address)
-        {
-            using (StreamWriter sw = new StreamWriter(dbFile, true))
-            {
-                sw.WriteLine($"{name}|{password}|{phone}|{email}|{address}");
-            }
-        }
-
-        static void SaveOrderToFile(Client client, Cart cart)
-        {
-            string jsonOrders = "orders.json";
-            List<Order> orders = new List<Order>();
-            
-            if (File.Exists(jsonOrders))
-            {
-                orders = JsonSerializer.Deserialize<List<Order>>(File.ReadAllText(jsonOrders)) ?? new List<Order>();
-            }
-
-            orders.Add(new Order {
-                Id = orders.Count > 0 ? orders.Max(o => o.Id) + 1 : 1,
-                ClientName = client.Name,
-                ClientPhone = client.Phone,
-                Address = client.DefaultAddress,
-                TotalPrice = cart.CalculateTotal(),
-                Status = OrderStatus.New,
-                Items = cart.Items.Select(i => i.Name).ToList()
-            });
-
-            File.WriteAllText(jsonOrders, JsonSerializer.Serialize(orders, new JsonSerializerOptions { WriteIndented = true }));
-        }
-            static List<Product> LoadCatalog()
-        {
-            string menuFile = "menu.json";
-            if (!File.Exists(menuFile))
-            {
-                var defaultCatalog = new List<Product>
-                {
-                    new Product(1, "Піца Маргарита", 250m), new Product(2, "Піца Пепероні", 300m),
-                    new Product(3, "Суші Філадельфія", 400m), new Product(4, "Бургер", 180m),
-                    new Product(5, "Кока-Кола 0.5л", 40m) 
-                };
-                File.WriteAllText(menuFile, JsonSerializer.Serialize(defaultCatalog, new JsonSerializerOptions { WriteIndented = true }));
-                return defaultCatalog;
-            }
-            return JsonSerializer.Deserialize<List<Product>>(File.ReadAllText(menuFile));
-        }
         static void Main(string[] args)
         {
             Console.OutputEncoding = System.Text.Encoding.UTF8;
             Console.InputEncoding = System.Text.Encoding.UTF8;
-            List<User> usersDb = LoadUsersFromDatabase();
-
-            List<Product> catalog = LoadCatalog();
-
+            Database db = new Database(); 
+            List<User> usersDb = db.LoadUsers(); 
+            List<Product> catalog = db.LoadCatalog();
             Console.WriteLine("=== СИСТЕМА ДОСТАВКИ ===");
             Console.WriteLine("1. Вхід (Авторизація)");
             Console.WriteLine("2. Реєстрація нового клієнта");
@@ -124,21 +50,15 @@ namespace DeliverySystem
                 {
                     Console.Write("Твоя пошта: "); string newEmail = Console.ReadLine();
                     Console.Write("Адреса доставки: "); string newAddress = Console.ReadLine();
-                    
-                    using (StreamWriter sw = new StreamWriter(dbFile, true))
-                        sw.WriteLine($"{newName}|{newPass}|{newPhone}|{newEmail}|{newAddress}");
-                    
                     usersDb.Add(new Client(newId, newName, newPhone, newPass, newEmail, newAddress));
+                    db.SaveUsers(usersDb); 
                 }
                 else if (role == "2")
-                {
-                    Console.Write("Номер твоєї тачки: "); string newCar = Console.ReadLine();
-                    
-                    using (StreamWriter sw = new StreamWriter(dbFile, true))
-                        sw.WriteLine($"{newName}|{newPass}|{newPhone}|{newCar}");
-                    
-                    usersDb.Add(new Driver(newId, newName, newPhone, newPass, newCar));
-                }
+                    {
+                        Console.Write("Номер твоєї тачки: "); string newCar = Console.ReadLine();
+                        usersDb.Add(new Driver(newId, newName, newPhone, newPass, newCar));
+                        db.SaveUsers(usersDb); 
+                    }
 
                 Console.WriteLine("[+] Чотко! Тебе зареєстровано. Перезапусти програму і увійди (цифра 1).");
                 return; 
@@ -239,16 +159,25 @@ namespace DeliverySystem
                             case "5":
                                 cart.Clear();
                                 break;
-                               case "6":
+                              case "6":
                                 if (cart.Items.Count == 0)
                                 {
-                                    Console.WriteLine("Куди ти оформлюєш, йолопе? Кошик порожній!");
+                                    Console.WriteLine("Кошик порожній!");
                                 }
                                 else
                                 {
-                                    SaveOrderToFile(client, cart);
-                                    Console.WriteLine("\n[✅] ЗАМОВЛЕННЯ УСПІШНО ОФОРМЛЕНО!");
-                                    Console.WriteLine("Дані збережено у файл 'orders.txt'. Чекай на кур'єра.");
+                                    var orders = db.LoadOrders();
+                                    orders.Add(new Order {
+                                        Id = orders.Count > 0 ? orders.Max(o => o.Id) + 1 : 1,
+                                        ClientName = client.Name,
+                                        ClientPhone = client.Phone,
+                                        Address = client.DefaultAddress,
+                                        TotalPrice = cart.CalculateTotal(),
+                                        Status = OrderStatus.New,
+                                        Items = cart.Items.Select(i => i.Name).ToList()
+                                    });
+                                    db.SaveOrders(orders);
+                                    Console.WriteLine("\n[✅] ЗАМОВЛЕННЯ ОФОРМЛЕНО!");
                                     cart.Clear(); 
                                 }
                                 break;
@@ -286,7 +215,6 @@ namespace DeliverySystem
                     else if (currentUser is Driver driver)
                 {
                     bool working = true;
-                    string jsonOrders = "orders.json";
                     
                     while (working)
                     {
@@ -299,7 +227,7 @@ namespace DeliverySystem
                         Console.Write("Вибір: ");
 
                         string dAction = Console.ReadLine();
-                        List<Order> currentOrders = File.Exists(jsonOrders) ? JsonSerializer.Deserialize<List<Order>>(File.ReadAllText(jsonOrders)) : new List<Order>();
+                        List<Order> currentOrders = db.LoadOrders();
 
                         if (dAction == "1")
                         {
@@ -315,7 +243,7 @@ namespace DeliverySystem
                                 if (order != null)
                                 {
                                     order.Status = dAction == "2" ? OrderStatus.InProgress : OrderStatus.Delivered;
-                                    File.WriteAllText(jsonOrders, JsonSerializer.Serialize(currentOrders, new JsonSerializerOptions { WriteIndented = true }));
+                                   db.SaveOrders(currentOrders);
                                     Console.WriteLine($"[+] Статус замовлення {oId} оновлено на {order.Status}!");
                                 }
                                 else Console.WriteLine("Бля, немає такого ID в базі.");
