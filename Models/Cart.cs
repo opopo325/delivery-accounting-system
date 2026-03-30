@@ -12,10 +12,13 @@ public class Cart
         Items.Add(product);
     }
 
-    public bool RemoveProduct(Product product)
-    {
-        return Items.Remove(product);
-    }
+   public void RemoveProduct(Product product)
+        {
+            if (Items.Remove(product))
+                Console.WriteLine($"[-] Товар '{product.Name}' успішно видалено з кошика.");
+            else
+                Console.WriteLine($"[!] Цього товару і так немає в кошику.");
+        }
 
     public void ApplyCoupon(Coupon coupon)
     {
@@ -28,13 +31,13 @@ public class Cart
         AppliedCoupon = null;
     }
     public decimal CalculateTotal()
-    {
-        decimal sum = Items.Sum(p => p.Price);
-        if (AppliedCoupon != null && AppliedCoupon.IsValid())
         {
-            sum -= sum * (AppliedCoupon.DiscountPercentage / 100m);
+            decimal sum = Items.Sum(p => p.Price);
+            if (AppliedCoupon != null && AppliedCoupon.IsValid())
+            {
+                sum -= sum * (AppliedCoupon.DiscountPercentage / 100m);
+            }
+            return Math.Round(sum, 2); 
         }
-        return sum;
-    }
 
 }

@@ -4,11 +4,11 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 
+
 #nullable disable 
 
 namespace DeliverySystem
 {
-    public enum OrderStatus { New, InProgress, Delivered, Canceled }
     class Program
     {
         static void Main(string[] args)
