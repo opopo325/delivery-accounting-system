@@ -43,5 +43,14 @@
     "Name": "\u041C\u0430\u043A\u0441\u0438\u043C\u0443\u0441",
     "Phone": "\u002B380965763788",
     "Password": "11012017"
+  },
+  {
+    "$type": "client",
+    "Email": "tsfjisg@gmail.com",
+    "DefaultAddress": "qqfg wg",
+    "Id": 104,
+    "Name": "Maks",
+    "Phone": "\u002B53536262611",
+    "Password": "11012017"
   }
 ]

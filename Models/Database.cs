@@ -17,12 +17,28 @@ public class Database
         {
             if (!File.Exists(menuFile))
             {
-                var defaultCatalog = new List<Product>
-                {
-                    new Product(1, "Піца Маргарита", 250m), new Product(2, "Піца Пепероні", 300m),
-                    new Product(3, "Суші Філадельфія", 400m), new Product(4, "Бургер", 180m),
-                    new Product(5, "Кока-Кола 0.5л", 40m) 
-                };
+               var defaultCatalog = new List<Product> {
+                        new Product(1, "🍕 Піца Маргарита", 250m),
+                        new Product(2, "🍕 Піца Пепероні", 300m),
+                        new Product(3, "🍕 Піца 4 Сири", 350m),
+                        new Product(4, "🍕 Піца Гавайська", 280m),
+                        new Product(5, "🍕 Піца М'ясна", 380m),
+                        new Product(6, "🍣 Суші Філадельфія", 400m),
+                        new Product(7, "🍣 Суші Каліфорнія", 350m),
+                        new Product(8, "🍣 Дракон з вугром", 450m),
+                        new Product(9, "🍣 Макі з лососем", 200m),
+                        new Product(10, "🍔 Чизбургер", 180m),
+                        new Product(11, "🍔 Дабл Чизбургер", 250m),
+                        new Product(12, "🍔 Бургер BBQ", 220m),
+                        new Product(13, "🍟 Картопля Фрі", 80m),
+                        new Product(14, "🍟 Картопля по-селянськи", 90m),
+                        new Product(15, "🍗 Нагетси (9 шт)", 150m),
+                        new Product(16, "🥤 Кока-Кола 0.5л", 40m),
+                        new Product(17, "🥤 Пепсі 0.5л", 40m),
+                        new Product(18, "🥤 Сік Апельсиновий", 50m),
+                        new Product(19, "🍰 Чизкейк", 120m),
+                        new Product(20, "🍰 Тірамісу", 140m)
+                    };
                 File.WriteAllText(menuFile, JsonSerializer.Serialize(defaultCatalog, options));
                 return defaultCatalog;
             }

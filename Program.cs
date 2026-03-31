@@ -22,12 +22,31 @@ namespace DeliverySystem
     {
         [STAThread]
         static void Main(string[] args)
-        
         {
-             ApplicationConfiguration.Initialize();
-            Application.Run(new LoginForm());
             Console.OutputEncoding = System.Text.Encoding.UTF8;
             Console.InputEncoding = System.Text.Encoding.UTF8;
+
+            Console.WriteLine("=== СИСТЕМА ДОСТАВКИ: ВИБІР РЕЖИМУ ===");
+            Console.WriteLine("1. Графічний інтерфейс (Вікна)");
+            Console.WriteLine("2. Консольний режим (Старий)");
+            Console.Write("Обери режим (1 або 2): ");
+            
+            string mode = Console.ReadLine();
+
+            if (mode == "2")
+            {
+                Console.Clear();
+                RunConsoleMode(); 
+            }
+            else
+            {
+                ApplicationConfiguration.Initialize();
+                Application.Run(new LoginForm());
+            }
+        }
+
+        static void RunConsoleMode()
+        {
             Database db = new Database(); 
             List<User> usersDb = db.LoadUsers(); 
             List<Product> catalog = db.LoadCatalog();
